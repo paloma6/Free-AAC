@@ -1,0 +1,58 @@
+[
+    {
+        "cell_name": "actions",
+        "cell_image_name": "run.png",
+        "children": [
+            {
+                "cell_name": "run",
+                "cell_image_name": "run.png"
+            }
+        ]
+    },
+    {
+        "cell_name": "emotions",
+        "cell_image_name": "emotional.png",
+        "children": [
+            {
+                "cell_name": "run",
+                "cell_image_name": "run.png"
+            }
+        ]
+    },
+    {
+        "cell_name": "nouns by categorie",
+        "cell_image_name": "options.png",
+        "children": [
+            {
+                "cell_name": "run",
+                "cell_image_name": "run.png"
+            }
+        ]
+    },
+    {
+        "cell_name": "descriptions",
+        "cell_image_name": "product-description.png",
+        "children": [
+            {
+                "cell_name": "run",
+                "cell_image_name": "run.png"
+            }
+        ]
+    },
+    {
+        "cell_name": "descriptions",
+        "cell_image_name": "product-description.png",
+        "children": [
+            {
+                "cell_name": "humans",
+                "cell_image_name": "run.png",
+                "children": [
+                    {
+                        "cell_name": "beautiful",
+                        "cell_image_name": "run.png"
+                    }
+                ]
+            }
+        ]
+    }
+]
