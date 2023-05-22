@@ -68,6 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<ImageToSpeechCell>? _topCells;
 
+  List currentSentence = [];
+
   @override
   void initState() {
     super.initState();
@@ -97,6 +99,18 @@ class _MyHomePageState extends State<MyHomePage> {
     await flutterTts.speak(text);
   }
 
+  void playSentenceTTS(List sentence) async {
+    String text = "";
+    for (var word in sentence) {
+      if (word is String) {
+        text += word + " ";
+      } else if (word is ImageToSpeechCell) {
+        text += word.name + " ";
+      }
+    }
+    await flutterTts.speak(text);
+  }
+
   @override
   Widget build(BuildContext context) {
     //While the imageToSpeechMetadata is loading, display a loading screen
@@ -116,8 +130,91 @@ class _MyHomePageState extends State<MyHomePage> {
             // The text field where the user can type the text to be read
             TextField(
               controller: _controller,
-              onSubmitted: playTTS,
+              onSubmitted: (text) {
+                if (text != "\u200b") {
+                  setState(() {
+                    currentSentence.add(text);
+                  });
+                }
+
+                _controller.text = "\u200b"; // the Zero-width character.
+                //moves the cursor after the zero-width character
+                _controller.selection = const TextSelection.collapsed(
+                  offset: 1,
+                );
+                playSentenceTTS(currentSentence);
+              },
+              onChanged: (value) {
+                if (value.endsWith(" ")) {
+                  setState(() {
+                    currentSentence.add(value.trim());
+
+                    // Adds the Zero-width character.
+                    // It is a hacky workaround to make the text field empty, but still be able
+                    // to detect the erase event. There is no other way to detect the erase in
+                    // an empty text field. See this https://medium.com/super-declarative/why-you-cant-detect-a-delete-action-in-an-empty-flutter-text-field-3cf53e47b631
+                    //moves the cursor after the zero-width space character
+                    _controller.text = "\u200b";
+
+                    //moves the cursor after the zero-width character
+                    _controller.selection = const TextSelection.collapsed(
+                      offset: 1,
+                    );
+
+                    //play the word :
+                    playSentenceTTS([value.trim()]);
+                  });
+                } else if (value
+                        .isEmpty && //Here if it is empty that means that the user pressed erase on a empty text field
+                    currentSentence.isNotEmpty) {
+                  setState(() {
+                    if (currentSentence.last is String) {
+                      _controller.text = "\u200b${currentSentence.last}";
+                    } else {
+                      _controller.text = "\u200b";
+                    }
+                    //moves the cursor at the end of the textfield
+                    _controller.selection = TextSelection.collapsed(
+                      offset: _controller.text.length,
+                    );
+                    currentSentence.removeLast();
+                  });
+                }
+              },
+              decoration: InputDecoration(
+                prefixIcon: Wrap(
+                  spacing: 10,
+                  children: [
+                    // Displays the already written pictures and words
+                    for (var word in currentSentence)
+                      if (word is String)
+                        Container(
+                          decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 214, 235, 252),
+                              borderRadius: BorderRadius.circular(4.0)),
+                          padding: const EdgeInsets.all(10.0),
+                          child: Text(word),
+                        )
+                      else if (word is ImageToSpeechCell)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          padding: const EdgeInsets.all(4.0),
+                          child: SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: word,
+                          ),
+                        ),
+                  ],
+                ),
+                prefixIconConstraints:
+                    const BoxConstraints(minWidth: 0, minHeight: 0),
+              ),
             ),
+
             //The back button
             Row(
               children: [
@@ -133,12 +230,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 )
               ],
             ),
-            // The grid view containing the cells for the image to speech
+            // The Wrap containing the cells for the image to speech
             Expanded(
-              child: GridView.count(
-                crossAxisCount: 4,
-                crossAxisSpacing: 20.0,
-                mainAxisSpacing: 20.0,
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                direction: Axis.horizontal,
                 children: _currentScreenPath
                     .fold<List<ImageToSpeechCell>>(
                       _topCells!,
@@ -148,17 +245,39 @@ class _MyHomePageState extends State<MyHomePage> {
                     .asMap() // asMap().entries is a dart hack to access indices
                     .entries
                     .map(
-                      (entry) => ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            if (entry.value.children != null) {
-                              _currentScreenPath.add(entry.key);
-                            } else {
-                              playTTS(entry.value.name);
-                            }
-                          });
-                        },
-                        child: entry.value,
+                      (entry) => SizedBox(
+                        width: 100,
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 100,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    if (entry.value.children != null) {
+                                      _currentScreenPath.add(entry.key);
+                                    } else {
+                                      playTTS(entry.value.name);
+                                      if (_controller.text != "") {
+                                        currentSentence.add(_controller.text);
+                                        _controller.text = "";
+                                      }
+                                      currentSentence.add(entry.value);
+                                    }
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: entry.value,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              entry.value.name,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
                     )
                     .toList(),

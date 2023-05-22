@@ -20,18 +20,8 @@ class ImageToSpeechCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-      child: Column(
-        children: [
-          Expanded(
-            child: Image.asset(
-              "images/$imageName",
-            ),
-          ),
-          Text(name),
-        ],
-      ),
+    return Image.asset(
+      "images/$imageName",
     );
   }
 }
