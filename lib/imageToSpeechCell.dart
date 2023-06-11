@@ -18,10 +18,18 @@ class ImageToSpeechCell extends StatelessWidget {
                 json["children"]!.map((x) => ImageToSpeechCell.fromJson(x))),
       );
 
+  Map<String, dynamic> toJson() => {
+        "cell_name": name,
+        "cell_image_name": imageName,
+        "children": children == null
+            ? null
+            : List<dynamic>.from(children!.map((x) => x.toJson())),
+      };
+
   @override
   Widget build(BuildContext context) {
     return Image.asset(
-      "images/$imageName",
+      "assets/images/$imageName",
     );
   }
 }
